@@ -9,6 +9,8 @@ matplotlib = "*"
 scipy = "*"
 seaborn = "*"
 pot = "*"
+jax = "*"
+ott-jax = "*"
 
 [dev-packages]
 ipykernel = "*"
