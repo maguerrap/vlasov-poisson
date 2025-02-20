@@ -1,4 +1,4 @@
-# Vlasov-Poisson-W2
+# Vlasov Poisson
 
 This repository contains:
 
