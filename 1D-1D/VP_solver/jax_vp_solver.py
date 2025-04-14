@@ -1,6 +1,7 @@
 import jax
 Array = jax.Array
 import jax.numpy as jnp
+import interpax
 import dataclasses
 from functools import partial
 from typing import Callable, Union
@@ -37,8 +38,10 @@ class VlasovPoissonSolver:
     def semilag_x(self, f: Array) -> Array:
         out = jnp.zeros_like(f)
         for i, v in enumerate(self.mesh.vs):
-            out = out.at[:, i].set(jnp.interp(self.mesh.xs - 0.5 * v * self.dt,
-                                              self.mesh.xs, f[:, i], period=self.mesh.period_x))
+            #out = out.at[:, i].set(jnp.interp(self.mesh.xs - 0.5 * v * self.dt,
+            #                                  self.mesh.xs, f[:, i], period=self.mesh.period_x))
+            out = out.at[:,i].set(interpax.interp1d(self.mesh.xs - 0.5 * v * self.dt,
+                                              self.mesh.xs, f[:, i], method='cubic2', period=self.mesh.period_x))
         return out
 
     def semilag_v(self, f: Array, E: Array, s: Union[Array, None] = None):
@@ -46,15 +49,19 @@ class VlasovPoissonSolver:
         if jnp.sum((jnp.real(E) * self.dt % self.mesh.dv) == 0) != 0.0:
             raise ValueError("E*dt shouldn't be a multiple of dv.")
         for i in range(self.mesh.nx):
-            out = out.at[i, :].set(jnp.interp(self.mesh.vs - E[i] * self.dt,
-                                              self.mesh.vs, f[i, :], period=2.0 * self.mesh.period_v))
+            #out = out.at[i, :].set(jnp.interp(self.mesh.vs - E[i] * self.dt,
+            #                                  self.mesh.vs, f[i, :], period=2.0 * self.mesh.period_v))
+            out = out.at[:,i].set(interpax.interp1d(self.mesh.vs - E[i] * self.dt,
+                                              self.mesh.vs, f[i, :], method='cubic2', period=2 * self.mesh.period_v))
             if s is not None:
                 out = out.at[i, :].add(self.dt * s[i])
         return out
 
     def build_semilag_x(self) -> Callable[[Array], Array]:
         def interp_jax_x(f, v):
-            return jnp.interp(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, period=self.mesh.period_x)
+            #return jnp.interp(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, period=self.mesh.period_x)
+            return interpax.interp1d(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, method='cubic2',
+                                     period=self.mesh.period_x)
         interp_vmap = jax.vmap(interp_jax_x, in_axes=(1, 0), out_axes=1)
         def semilag_x(f):
             return interp_vmap(f, self.mesh.vs)
@@ -62,7 +69,9 @@ class VlasovPoissonSolver:
 
     def build_semilag_v(self) -> Callable[[Array, Array], Array]:
         def interp_jax_v(f: Array, E: Array) -> Array:
-            return jnp.interp(self.mesh.vs - E * self.dt, self.mesh.vs, f, period=2 * self.mesh.period_v)
+            #return jnp.interp(self.mesh.vs - E * self.dt, self.mesh.vs, f, period=2 * self.mesh.period_v)
+            return interpax.interp1d(self.mesh.vs - E * self.dt, self.mesh.vs, f, method='cubic2',
+                                     period=2 * self.mesh.period_v)
         return jax.vmap(interp_jax_v, in_axes=(0, 0), out_axes=0)
 
     def compute_rho(self, f: Array) -> Array:
