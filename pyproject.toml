@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Martin Guerra, email = "mguerra4@wisc.edu" },
+  { name = "Martin Guerra", email = "mguerra4@wisc.edu" },
   { name = "Yukun Yue", email = "yyue24@wisc.edu"},
   { name = "Leonardo Zepeda-Núñez" = "lzepedanunez@google.com"}
 ]
