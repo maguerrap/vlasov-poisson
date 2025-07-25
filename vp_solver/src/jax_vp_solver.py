@@ -1,7 +1,6 @@
 import jax
 Array = jax.Array
 import jax.numpy as jnp
-import interpax
 import dataclasses
 from functools import partial
 from typing import Callable, Union
@@ -35,43 +34,15 @@ class VlasovPoissonSolver:
     dt: float
     f_eq: Array
 
-    def semilag_x(self, f: Array) -> Array:
-        out = jnp.zeros_like(f)
-        for i, v in enumerate(self.mesh.vs):
-            #out = out.at[:, i].set(jnp.interp(self.mesh.xs - 0.5 * v * self.dt,
-            #                                  self.mesh.xs, f[:, i], period=self.mesh.period_x))
-            out = out.at[:,i].set(interpax.interp1d(self.mesh.xs - 0.5 * v * self.dt,
-                                              self.mesh.xs, f[:, i], method='cubic2', period=self.mesh.period_x))
-        return out
-
-    def semilag_v(self, f: Array, E: Array, s: Union[Array, None] = None):
-        out = jnp.zeros_like(f)
-        if jnp.sum((jnp.real(E) * self.dt % self.mesh.dv) == 0) != 0.0:
-            raise ValueError("E*dt shouldn't be a multiple of dv.")
-        for i in range(self.mesh.nx):
-            #out = out.at[i, :].set(jnp.interp(self.mesh.vs - E[i] * self.dt,
-            #                                  self.mesh.vs, f[i, :], period=2.0 * self.mesh.period_v))
-            out = out.at[:,i].set(interpax.interp1d(self.mesh.vs - E[i] * self.dt,
-                                              self.mesh.vs, f[i, :], method='cubic2', period=2 * self.mesh.period_v))
-            if s is not None:
-                out = out.at[i, :].add(self.dt * s[i])
-        return out
 
     def build_semilag_x(self) -> Callable[[Array], Array]:
         def interp_jax_x(f, v):
-            #return jnp.interp(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, period=self.mesh.period_x)
-            return interpax.interp1d(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, method='cubic2',
-                                     period=self.mesh.period_x)
-        interp_vmap = jax.vmap(interp_jax_x, in_axes=(1, 0), out_axes=1)
-        def semilag_x(f):
-            return interp_vmap(f, self.mesh.vs)
-        return semilag_x
+            return jnp.interp(self.mesh.xs - 0.5 * v * self.dt, self.mesh.xs, f, period=self.mesh.period_x)
+        return jax.vmap(interp_jax_x, in_axes=(1,0), out_axes=1)
 
     def build_semilag_v(self) -> Callable[[Array, Array], Array]:
         def interp_jax_v(f: Array, E: Array) -> Array:
-            #return jnp.interp(self.mesh.vs - E * self.dt, self.mesh.vs, f, period=2 * self.mesh.period_v)
-            return interpax.interp1d(self.mesh.vs - E * self.dt, self.mesh.vs, f, method='cubic2',
-                                     period=2 * self.mesh.period_v)
+            return jnp.interp(self.mesh.vs - E * self.dt, self.mesh.vs, f, period=2 * self.mesh.period_v)
         return jax.vmap(interp_jax_v, in_axes=(0, 0), out_axes=0)
 
     def compute_rho(self, f: Array) -> Array:
@@ -111,86 +82,15 @@ class VlasovPoissonSolver:
 
         @jax.jit
         def time_step_jax(f, t):
-            f_half = semilag_x(f)
+            f_half = semilag_x(f, self.mesh.vs)
             E = compute_E_jax(f_half)
             E_total = E + H
             ee = compute_energy_jax(E)
             f = semilag_v(f_half, E_total)
-            f = semilag_x(f)
+            f = semilag_x(f, self.mesh.vs)
             return f, (E_total, ee)
 
         # Accumulate the final f, E, and electric energy ee
         f_array, (E_array, ee_array) = jax.lax.scan(time_step_jax, f, tspan)
 
         return f_array, E_array, ee_array
-    
-    @jax.jit
-    def shift_by_n(self, g, EH):
-        hv = self.mesh.dv
-        dt = self.dt
-        n = jnp.floor(-dt * EH / hv).astype(int)  # Shape (nx,)
-
-        def shift_row(row, shift):
-            return jnp.roll(row, -shift)
-
-        return jax.vmap(shift_row)(g, n)
-
-    @partial(jax.jit, static_argnums=0)
-    def time_step_backward(self, f, f_star, EH_star):
-        dt = self.dt
-        hv = self.mesh.dv
-
-        f = self.semilag_x(f)
-        g_starstar = f
-        g_ss_s = self.shift_by_n(f, EH_star)
-        g_ss_d = (g_ss_s - jnp.roll(g_ss_s, 1, axis=1)) / hv
-        rho = jnp.sum(g_ss_d * f_star, axis=1) * hv
-        s = self.compute_E_from_rho(rho)
-        f = self.semilag_v(f, EH_star, s)
-        f = self.semilag_x(f)
-
-        return g_starstar, f
-
-    # Modified run_backward function
-    @partial(jax.jit, static_argnums=0)
-    def run_backward(self, gT, f_stars, E_stars):
-        dt = self.dt
-        hv = self.mesh.dv
-
-        f_stars_rev = f_stars[::-1]
-        E_stars_rev = E_stars[::-1]
-        f_init = gT
-
-        def backward_step(f_prev, inputs):
-            f_star, EH_star = inputs
-            g_starstar, f_next = self.time_step_backward(f_prev, f_star, EH_star)
-            return f_next, (g_starstar, f_next)
-
-        inputs = (f_stars_rev, E_stars_rev)
-        f_final, outputs = jax.lax.scan(backward_step, f_init, inputs)
-        g_starstars, fs = outputs
-
-        # Instead of using concatenate, include gT as part of the iteration
-        fs = jax.vmap(lambda f, g: g, in_axes=(0, None))(fs, gT)
-        
-        return fs[::-1], g_starstars[::-1]
-    
-    @partial(jax.jit, static_argnums=0)
-    def calc_cost_gradient(self, H: Array, f_eq: Array):
-        f_array, E_array, ee_array = self.run_forward_jax_scan(H, f_eq, t_final=self.dt * len(H))
-        cost = jnp.sum((f_array[-1] - f_eq) ** 2) * self.mesh.dx * self.mesh.dv
-
-        gT = 2 * (f_array[-1] - f_eq) / self.dt
-        f_back_array, g_starstars = self.run_backward(gT, f_array, E_array)
-
-        # Vectorize gradient calculations
-        f_ss_s = jax.vmap(self.shift_by_n, in_axes=(0, 0))(f_array, E_array)
-        f_ss_d = jax.vmap(lambda f: (f - jnp.roll(f, -1, axis=1)) / self.mesh.dv)(f_ss_s)
-        gradient = jax.vmap(lambda fd, g: jnp.sum(fd * g, axis=1) * self.mesh.dv)(f_ss_d, g_starstars).sum(axis=0) * self.dt ** 2 * self.mesh.dx
-
-        return cost, gradient, f_array, ee_array
-
-    @partial(jax.jit, static_argnums=0)
-    def calc_cost_only(self, H: Array, f_eq: Array):
-        f_array, _, _ = self.run_forward_jax_scan(H, f_eq, t_final=self.dt * len(H))
-        return jnp.sum((f_array[-1] - f_eq) ** 2) * self.mesh.dx * self.mesh.dv
