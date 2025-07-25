@@ -8,7 +8,7 @@ license = { file = "LICENSE" }
 authors = [
   { name = "Martin Guerra", email = "mguerra4@wisc.edu" },
   { name = "Yukun Yue", email = "yyue24@wisc.edu"},
-  { name = "Leonardo Zepeda-Núñez" = "lzepedanunez@google.com"}
+  { name = "Leonardo Zepeda-Núñez", email = "lzepedanunez@google.com"}
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
