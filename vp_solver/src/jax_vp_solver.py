@@ -1,6 +1,5 @@
 import dataclasses
-from functools import partial
-from typing import Callable, Union
+from typing import Callable
 
 import jax
 import jax.numpy as jnp
@@ -10,6 +9,7 @@ Array = jax.Array
 
 @dataclasses.dataclass
 class Mesh:
+    """Mesh object."""
     xs: Array
     dx: float
     vs: Array
@@ -23,10 +23,11 @@ class Mesh:
 
 
 def make_mesh(length_x: float, length_v: float, nx: int, nv: int) -> Mesh:
+    """Generates mesh object."""
     xs = jnp.linspace(0.0, length_x, nx, endpoint=False)
-    dx = xs[1] - xs[0]
+    dx = float(xs[1] - xs[0])
     vs = jnp.linspace(-length_v, length_v, nv, endpoint=False)
-    dv = vs[1] - vs[0]
+    dv = float(vs[1] - vs[0])
     V, X = jnp.meshgrid(vs, xs)
     return Mesh(
         xs=xs,
@@ -44,12 +45,42 @@ def make_mesh(length_x: float, length_v: float, nx: int, nv: int) -> Mesh:
 
 @dataclasses.dataclass(frozen=True)
 class VlasovPoissonSolver:
+    """
+    Vlasov–Poisson semi-Lagrangian solver with operator splitting.
+
+    The Vlasov–Poisson system is given by
+
+        ∂_t f(t, x, v)
+        + v ∂_x f(t, x, v)
+        - (E(t, x) + H(x)) ∂_v f(t, x, v) = 0,
+
+    where f(t, x, v) is the particle distribution function.
+
+    The electric field E(t, x) is determined by Poisson's equation:
+
+        E(t, x) = ∂_x V(t, x)
+
+        ∂_xx V(t, x) = 1 - ρ(t, x),
+
+    with charge density
+
+        ρ(t, x) = ∫ f(t, x, v) dv.
+
+    We split our operator into
+        ∂_t f(t, x, v) + v ∂_x f(t, x, v) = 0  (1),
+    and
+        ∂_t f(t, x, v) - (E(t, x) + H(x)) ∂_v f(t, x, v) = 0    (2).
+    """
+
     mesh: Mesh
     dt: float
     f_eq: Array
 
-    def build_semilag_x(self) -> Callable[[Array], Array]:
-        def interp_jax_x(f, v):
+    def build_semilag_x(self) -> Callable[[Array, Array], Array]:
+        """
+        Builds semi-Lagrangian to solve (1) via linear interpolation.
+        """
+        def interp_jax_x(f: Array, v: Array) -> Array:
             return jnp.interp(
                 self.mesh.xs - 0.5 * v * self.dt,
                 self.mesh.xs,
@@ -60,6 +91,9 @@ class VlasovPoissonSolver:
         return jax.vmap(interp_jax_x, in_axes=(1, 0), out_axes=1)
 
     def build_semilag_v(self) -> Callable[[Array, Array], Array]:
+        """
+        Builds semi-Lagrangian to solve (2) via linear interpolation.
+        """
         def interp_jax_v(f: Array, E: Array) -> Array:
             return jnp.interp(
                 self.mesh.vs - E * self.dt,
@@ -71,9 +105,12 @@ class VlasovPoissonSolver:
         return jax.vmap(interp_jax_v, in_axes=(0, 0), out_axes=0)
 
     def compute_rho(self, f: Array) -> Array:
+        """Compute value of ρ(t, x)."""
         return self.mesh.dv * jnp.sum(self.f_eq - f, axis=1)
 
     def compute_E_from_rho(self, rho: Array) -> Array:
+        """Compute value of E(t, x) from ρ(t, x)."""
+
         rho_hat = jnp.fft.fft(rho)
         E_hat = jnp.zeros_like(rho_hat)
 
@@ -91,25 +128,22 @@ class VlasovPoissonSolver:
         return jnp.real(jnp.fft.ifft(E_hat))
 
     def compute_E(self, f: Array) -> Array:
+        """Compute E(t, x)."""
         return self.compute_E_from_rho(self.compute_rho(f))
 
     def compute_electric_energy(self, E: Array) -> Array:
+        """Compute electric energy from E(t, x)."""
         return 0.5 * jnp.sum(jnp.square(E)) * self.mesh.dx
 
-    @jax.jit
-    def time_step(
-        self, f: Array, H: Array
-    ) -> tuple[Array, Array, Array]:
-        f_half = self.semilag_x(f)
-        E = self.compute_E(f_half)
-        E_total = E + H
-        f = self.semilag_v(f_half, E_total)
-        f = self.semilag_x(f)
-        return f, f_half, E_total
 
     def run_forward_jax_scan(
         self, f_iv: Array, H: Array, t_final: float
     ) -> tuple:
+        
+        """
+        Compute time integration for the time derivative.
+        """
+
         num_steps = int(t_final / self.dt)
         f = f_iv.copy()
         tspan = self.dt * jnp.linspace(0, t_final, num_steps)
