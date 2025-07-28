@@ -3,33 +3,28 @@ name = "vp_solver"
 version = "0.1.0"
 description = "Solver for the 1D-1D Vlasov-Poisson using a semi-Lagrangian scheme."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
   { name = "Martin Guerra", email = "mguerra4@wisc.edu" },
-  { name = "Yukun Yue", email = "yyue24@wisc.edu"},
-  { name = "Leonardo Zepeda-Núñez", email = "lzepedanunez@google.com"}
+  { name = "Yukun Yue", email = "yyue24@wisc.edu" },
+  { name = "Leonardo Zepeda-Núñez", email = "lzepedanunez@google.com" }
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "License :: OSI Approved :: MIT License",
-  "Intended Audience :: Science/Research"
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Mathematics"
 ]
-keywords = [
-  "plasma physics", "jax", "Vlasov-Poisson"
-]
-dependencies = [
-  "jupyter",
-  "matplotlib",
-  "numpy",
-  "jax",
-  "optax"
-]
+keywords = ["plasma physics", "jax", "Vlasov-Poisson"]
 
-[project.urls]
-homepage = "https://github.com/maguerrap/vlasov-poisson"
-repository = "https://github.com/maguerrap/vlasov-poisson"
+dependencies = [
+  "jax>=0.6.0",
+  "numpy>=1.26",
+  "matplotlib>=3.8"
+]
 
 [project.optional-dependencies]
 dev = [
@@ -39,11 +34,20 @@ dev = [
   "pyink",
   "ipykernel"
 ]
+notebooks = [
+  "jupyter",
+  "matplotlib",
+  "optax"
+]
+
+[project.urls]
+homepage = "https://github.com/maguerrap/vlasov-poisson"
+repository = "https://github.com/maguerrap/vlasov-poisson"
 
 [tool.pyink]
 line-length = 80
 preview = true
-pyink-indentation = 2
+pyink-indentation = 4
 pyink-use-majority-quotes = true
 
 [build-system]
@@ -51,6 +55,5 @@ requires = ["flit_core >=3.8,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.sdist]
-exclude = [
-  "**/*_test.py"
-]
+exclude = ["**/*_test.py"]
+
