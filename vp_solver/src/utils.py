@@ -7,7 +7,7 @@ import matplotlib
 from matplotlib import figure, axes
 import matplotlib.pyplot as plt
 
-from jax_vp_solver import Mesh, VlasovPoissonSolver
+from .jax_vp_solver import Mesh, VlasovPoissonSolver
 
 
 matplotlib.rcParams.update({
