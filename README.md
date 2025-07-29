@@ -84,7 +84,7 @@ from vp_solver import Mesh, VlasovPoissonSolver
 ```
 
 ### Examples
-We provide Jupyter notebooks in the `examples/` folder:
+We provide Jupyter notebooks in the `examples` folder:
 
 - Two Stream Equilibrium
 - Bump-on-Tail Equilibrium
