@@ -33,7 +33,6 @@ where:
 - $H(x)$ is an external electric field (control),
 - $V_{f}(t,x)$ is the electric potential,
 - $\rho_{f}(t,x)$ is the charged density,
-- $f_{\text{eq}}(v)$ is the equilibrium distribution,
 - $x \in [0, L_x]$ and $v \in [-L_v, L_v]$.
 
 ---
