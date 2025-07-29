@@ -92,12 +92,12 @@ We provide Jupyter notebooks in the examples/ folder:
 
 #### Two Stream Equilibrium
 
-![Vlasov–Poisson schematic](assets/TS_noH.pdf)
+![Vlasov–Poisson schematic](assets/TS_noH.png)
 
 
 #### Bump-on-Tail Equilibrium
 
-![Vlasov–Poisson schematic](assets/BoT_noH.pdf)
+![Vlasov–Poisson schematic](assets/BoT_noH.png)
 
 In these notebooks, we:
 
