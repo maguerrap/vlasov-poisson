@@ -92,7 +92,7 @@ In these notebooks, we:
 
 - Run forward simulations of the Vlasov–Poisson system
 - Use [Optax](https://github.com/google-deepmind/optax/tree/main) to solve a PDE-constrained optimization problem:
--The goal is to design the external field  $H(x)$ that minimizes a chosen objective (e.g. KL divergence or electric energy).
+- The goal is to design the external field  $H(x)$ that minimizes a chosen objective (e.g. KL divergence or electric energy).
 
 To run them, launch Jupyter:
 
