@@ -16,7 +16,7 @@ We solve the **Vlasov–Poisson system** in one spatial and one velocity
 dimension, given by
 
 $$
-\left\{\begin{array}{lc}
+\left\leftbrace\begin{array}{lc}
    \partial_{t}f + v\partial_{x}f - (E_{f}+H) \partial_{v}f = 0 \,,\\
    E_{f} = \partial_{x}V_{f} \,, \\
    \partial_{xx} V_{f} = 1 - \rho_{f} =1 - \int  f \,\mathrm{d}v\,.
