@@ -1,4 +1,4 @@
-# vp_solver
+# Vlasov-Poisson solver
 
 A solver for the **1D–1D Vlasov–Poisson system** using a semi-Lagrangian
 scheme, built with [JAX](https://github.com/google/jax) for high-performance
@@ -10,11 +10,37 @@ Two-Stream and Bump-on-Tail equilibria.
 
 ---
 
+## Mathematical Model
+
+We solve the **Vlasov–Poisson system** in one spatial and one velocity
+dimension, given by
+
+\[
+\left\{\begin{array}{lc}
+   \partial_{t}f + v\partial_{x}f - (E_{f}+H) \partial_{v}f = 0 \,,\\
+   E_{f} = \partial_{x}V_{f} \,, \\
+   \partial_{xx} V_{f} = 1 - \rho_{f} =1 - \int  f \,\mathrm{d}v\,.
+\end{array}\right.
+\]
+
+where:
+- \( f(t, x, v) \) is the plasma distribution function,
+- \( E(t, x) \) is the self-consistent electric field,
+- \( H(x) \) is an external electric field (control),
+- \( \rho_{f}(t,x) \) is the charged density,
+- \( f_{\text{eq}}(v) \) is the equilibrium distribution,
+- \( x \in [0, L_x] \) and \( v \in [-L_v, L_v] \).
+
+---
+
 ## Features
 
 - ⚡ Semi-Lagrangian solver for the 1D–1D Vlasov–Poisson system  
 - 🔁 Built with [JAX](https://github.com/google/jax) for GPU/TPU acceleration  
-- 📈 Includes cost functions (KL divergence, electric energy, etc.)  
+- 📈 Includes cost functions:
+  - KL divergence vs. equilibrium
+  - Final electric energy
+  - Time-integrated electric energy   
 - 📊 Visualization utilities for distributions and fields  
 - 📓 Example Jupyter notebooks for experiments  
 
@@ -44,7 +70,7 @@ Then install the solver:
 pip install git+https://github.com/maguerrap/vlasov-poisson.git@main
 ```
 
-### Usage
+## Usage
 
 After installation, you can import the solver:
 ```python
@@ -56,12 +82,19 @@ We provide Jupyter notebooks in the examples/ folder:
 
 - Two-Stream Equilibrium
 - Bump-on-Tail Equilibrium
+
+In these notebooks, we:
+
+- Run forward simulations of the Vlasov–Poisson system
+- Use [Optax](https://github.com/google-deepmind/optax/tree/main) to solve a PDE-constrained optimization problem:
+-The goal is to design the external field  \(H(x)\) that minimizes a chosen objective (e.g. KL divergence or electric energy).
+
 To run them, launch Jupyter:
 
 ```bash
 jupyter notebook examples/
 ```
 
-### License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](https://github.com/maguerrap/vlasov-poisson/blob/main/LICENSE).
