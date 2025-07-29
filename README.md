@@ -75,6 +75,8 @@ Then install the solver:
 pip install git+https://github.com/maguerrap/vlasov-poisson.git@main
 ```
 
+---
+
 ## Usage
 
 After installation, you can import the solver:
@@ -82,11 +84,20 @@ After installation, you can import the solver:
 from vp_solver import Mesh, VlasovPoissonSolver
 ```
 
-Examples
+### Examples
 We provide Jupyter notebooks in the examples/ folder:
 
-- Two-Stream Equilibrium
+- Two Stream Equilibrium
 - Bump-on-Tail Equilibrium
+
+#### Two Stream Equilibrium
+
+![Vlasov–Poisson schematic](assets/TS_noH.pdf)
+
+
+#### Bump-on-Tail Equilibrium
+
+![Vlasov–Poisson schematic](assets/BoT_noH.pdf)
 
 In these notebooks, we:
 
@@ -99,6 +110,8 @@ To run them, launch Jupyter:
 ```bash
 jupyter notebook examples/
 ```
+
+---
 
 ## License
 
