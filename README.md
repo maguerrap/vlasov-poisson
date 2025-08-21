@@ -8,6 +8,10 @@ This project enables forward simulation of the Vlasov–Poisson equation
 and optimization over external fields, with examples for
 Two-Stream and Bump-on-Tail equilibria.
 
+This is the code used to run the experiments on the paper 
+"What metric to optimize for suppressing instability in a Vlasov-Poisson system?"
+which can be found [here](https://arxiv.org/abs/2504.10435).
+
 ---
 
 ## Mathematical Model
