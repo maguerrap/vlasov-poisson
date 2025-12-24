@@ -26,7 +26,7 @@ def mesh():
 @pytest.fixture
 def f_eq(mesh):
     """Simple Maxwellian equilibrium."""
-    return jnp.exp(-mesh.V**2 / 2.0)
+    return jnp.exp(-0.5 * mesh.V**2)
 
 
 @pytest.fixture
@@ -133,3 +133,56 @@ def test_scan_is_jittable(solver, f0):
         return solver.run_forward_jax_scan(f0, H, solver.dt)
 
     run()  # should not raise
+
+# ----------------------------
+# Physics aware tests
+# ----------------------------
+
+def test_mass_conservation(solver, f0):
+    H = jnp.zeros(solver.mesh.nx)
+    t_final = 10 * solver.dt
+
+    f_array, _, _, _ = solver.run_forward_jax_scan(
+        f0, H, t_final
+    )
+
+    def mass(f):
+        return jnp.sum(f) * solver.mesh.dx * solver.mesh.dv
+
+    mass0 = mass(f0)
+    massT = mass(f_array)
+
+    assert jnp.isclose(
+        mass0, massT, rtol=1e-6, atol=1e-8
+    )
+
+
+def test_zero_mode_filtered(solver, f0):
+    rho = solver.compute_rho(f0)
+    E = solver.compute_E_from_rho(rho)
+
+    E_hat = jnp.fft.fft(E)
+
+    assert jnp.isclose(E_hat[0], 0.0, atol=1e-12)
+
+
+def test_linear_landau_damping(solver, f0):
+    """
+    Qualitative Landau damping test:
+    electric energy should decay at early times.
+    """
+    H = jnp.zeros(solver.mesh.nx)
+    t_final = 20 * solver.dt
+
+    _, _, _, ee_array = solver.run_forward_jax_scan(
+        f0, H, t_final
+    )
+
+    # ignore first step (transient)
+    ee = ee_array[1:]
+
+    # energy should decrease overall
+    assert ee[-1] < ee[0]
+
+    # no explosive growth
+    assert jnp.max(ee) < 2.0 * ee[0]
