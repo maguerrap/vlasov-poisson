@@ -161,10 +161,10 @@ class VlasovPoissonSolver:
             ee = compute_energy_jax(E)
             f = semilag_v(f_half, E_total)
             f = semilag_x(f, self.mesh.vs)
-            return f, (E_total, ee)
+            return f, (f, E_total, ee)
 
-        f_array, (E_array, ee_array) = jax.lax.scan(
+        f_array, (f_total, E_array, ee_array) = jax.lax.scan(
             time_step_jax, f, tspan
         )
 
-        return f_array, E_array, ee_array
+        return f_array, f_total, E_array, ee_array

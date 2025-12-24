@@ -82,7 +82,7 @@ def make_cost_function_kl(
     @jax.jit
     def cost_function_kl(a_k: Array) -> Array:
         H = external_electric_field(a_k, solver.mesh, k_0)
-        f_array, _, _ = solver_jit(f_iv, H, t_final)
+        f_array, _, _, _ = solver_jit(f_iv, H, t_final)
         return kl_divergence(f_array, solver)
 
     return cost_function_kl
@@ -107,7 +107,7 @@ def make_cost_function_ee(
     @jax.jit
     def cost_function_ee(a_k: Array) -> Array:
         H = external_electric_field(a_k, solver.mesh, k_0)
-        _, _, ee_array = solver_jit(f_iv, H, t_final)
+        _, _, _, ee_array = solver_jit(f_iv, H, t_final)
         return ee_array[-1]
 
     return cost_function_ee
@@ -140,7 +140,7 @@ def make_cost_function_eet(
     @jax.jit
     def cost_function_eet(a_k: Array) -> Array:
         H = external_electric_field(a_k, solver.mesh, k_0)
-        _, _, ee_array = solver_jit(f_iv, H, t_final)
+        _, _, _, ee_array = solver_jit(f_iv, H, t_final)
         return electric_energy_in_time(ee_array, solver)
 
     return cost_function_eet
