@@ -147,7 +147,8 @@ def test_mass_conservation(solver, f0):
     )
 
     def mass(f):
-        return jnp.sum(f) * solver.mesh.dx * solver.mesh.dv
+        return jnp.trapezoid(jnp.trapezoid(f, solver.mesh.xs, axis=0),
+                             solver.mesh.vs, axis=0)
 
     mass0 = mass(f0)
     massT = mass(f_array)
