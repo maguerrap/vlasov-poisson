@@ -56,16 +56,19 @@ def kl_divergence(
 
         KL(f_T || f_eq) = ∫∫ f_T log(f_T / f_eq) dx dv.
     """
-    dx_dv = solver.mesh.dx * solver.mesh.dv
-    norm_final = jnp.sum(f_T) * dx_dv + eps
-    norm_eq = jnp.sum(solver.f_eq) * dx_dv + eps
+    norm_final = jnp.trapezoid(jnp.trapezoid(f_T, solver.mesh.vs, axis=1),
+                               solver.mesh.xs) + eps
+    norm_eq = jnp.trapezoid(jnp.trapezoid(solver.f_eq, solver.mesh.vs, axis=1),
+                            solver.mesh.xs) + eps
 
     f_final = f_T / norm_final
     f_eq = solver.f_eq / norm_eq
 
-    kl_div = jnp.sum(
-        jax.scipy.special.rel_entr(f_final, f_eq + eps) * dx_dv
-    )
+    kl_div = jnp.trapezoid(jnp.trapezoid(
+        jax.scipy.special.rel_entr(f_final, f_eq + eps),
+        solver.mesh.vs,
+        axis=1
+    ), solver.mesh.xs)
     return kl_div
 
 
@@ -124,7 +127,7 @@ def electric_energy_in_time(
 
         EE = ∫∫ [E(t, x)]² dx dt
     """
-    return jnp.sum(ee_array) * solver.dt
+    return jnp.trapezoid(ee_array, dx=solver.dt)
 
 
 def make_cost_function_eet(
