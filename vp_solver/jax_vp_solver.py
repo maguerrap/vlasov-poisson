@@ -88,7 +88,7 @@ class VlasovPoissonSolver:
                 period=self.mesh.period_x,
             )
 
-        return jax.vmap(interp_jax_x, in_axes=(1, 0), out_axes=1)
+        return jax.vmap(interp_jax_x, in_axes=(1,0), out_axes=1)
 
     def build_semilag_v(self) -> Callable[[Array, Array], Array]:
         """
@@ -106,7 +106,7 @@ class VlasovPoissonSolver:
 
     def compute_rho(self, f: Array) -> Array:
         """Compute value of ρ(t, x)."""
-        return self.mesh.dv * jnp.sum(self.f_eq - f, axis=1)
+        return jnp.trapezoid(self.f_eq - f, self.mesh.vs, axis=1)
 
     def compute_E_from_rho(self, rho: Array) -> Array:
         """Compute value of E(t, x) from ρ(t, x)."""
@@ -133,7 +133,7 @@ class VlasovPoissonSolver:
 
     def compute_electric_energy(self, E: Array) -> Array:
         """Compute electric energy from E(t, x)."""
-        return 0.5 * jnp.sum(jnp.square(E)) * self.mesh.dx
+        return 0.5 * jnp.trapezoid(jnp.square(E), self.mesh.xs)
 
 
     def run_forward_jax_scan(
