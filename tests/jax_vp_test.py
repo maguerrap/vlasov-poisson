@@ -8,6 +8,7 @@ from vp_solver.jax_vp_solver import (
     VlasovPoissonSolver,
 )
 
+jax.config.update("jax_enable_x64", True)
 
 # ----------------------------
 # Fixtures
@@ -33,7 +34,7 @@ def f_eq(mesh):
 def solver(mesh, f_eq):
     return VlasovPoissonSolver(
         mesh=mesh,
-        dt=0.01,
+        dt=0.001,
         f_eq=f_eq,
     )
 
