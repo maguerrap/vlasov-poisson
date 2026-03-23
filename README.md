@@ -1,6 +1,6 @@
 # Vlasov-Poisson solver
 
-A solver for the **1D–1D Vlasov–Poisson system** using a semi-Lagrangian
+A solver for the **1D–1V Vlasov–Poisson system** using a semi-Lagrangian
 scheme, built with [JAX](https://github.com/google/jax) for high-performance
 computing and automatic differentiation.
 
