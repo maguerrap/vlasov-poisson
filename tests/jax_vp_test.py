@@ -155,7 +155,7 @@ def test_mass_conservation(solver, f0):
     massT = mass(f_array)
 
     assert jnp.isclose(
-        mass0, massT, rtol=1e-5, atol=1e-7
+        mass0, massT, rtol=1e-10, atol=1e-12
     )
 
 
