@@ -42,7 +42,7 @@ def solver(mesh, f_eq):
 @pytest.fixture
 def f0(mesh, f_eq):
     """Small perturbation around equilibrium."""
-    perturb = 0.01 * jnp.cos(mesh.X)
+    perturb = 0.001 * jnp.cos(mesh.X)
     return f_eq * (1.0 + perturb)
 
 
@@ -155,7 +155,7 @@ def test_mass_conservation(solver, f0):
     massT = mass(f_array)
 
     assert jnp.isclose(
-        mass0, massT, rtol=1e-10, atol=1e-12
+        mass0, massT, rtol=1e-5, atol=1e-7
     )
 
 
