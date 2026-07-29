@@ -88,8 +88,8 @@ from vp_solver import Mesh, VlasovPoissonSolver
 ### Examples
 We provide Jupyter notebooks in the `examples` folder:
 
-- Two Stream Equilibrium
-- Bump-on-Tail Equilibrium
+- Two Stream Equilibrium [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/maguerrap/vlasov-poisson/blob/main/examples/01_Two_Stream_Vlasov-Poisson-solver-opt.ipynb)
+- Bump-on-Tail Equilibrium [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/maguerrap/vlasov-poisson/blob/main/examples/02_Bump_on_Tail_Vlasov-Poisson-solver-opt.ipynb)
 
 #### Two Stream Equilibrium
 
