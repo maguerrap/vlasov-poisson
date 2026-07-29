@@ -7,8 +7,7 @@ computing and automatic differentiation.
 This project enables forward simulation of the Vlasov–Poisson equation
 and optimization over external fields, with examples for
 Two-Stream and Bump-on-Tail equilibria. Both are the numerical experiments of the paper 
-"What metric to optimize for suppressing instability in a Vlasov-Poisson system?"
-which can be found [here](https://www.sciencedirect.com/science/article/pii/S0021999126005218).
+[What metric to optimize for suppressing instability in a Vlasov-Poisson system?](https://www.sciencedirect.com/science/article/pii/S0021999126005218).
 
 ---
 
