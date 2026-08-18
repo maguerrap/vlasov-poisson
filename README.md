@@ -1,5 +1,9 @@
 # Vlasov-Poisson solver
 
+[![Run Tests](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_test.yml/badge.svg)](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_test.yml)
+[![codecov](https://codecov.io/gh/maguerrap/vlasov-poisson/graph/badge.svg)](https://codecov.io/gh/maguerrap/vlasov-poisson)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/maguerrap/vlasov-poisson/blob/main/LICENSE)
+
 A solver for the **1D–1V Vlasov–Poisson system** using a semi-Lagrangian
 scheme, built with [JAX](https://github.com/google/jax) for high-performance
 computing and automatic differentiation.
