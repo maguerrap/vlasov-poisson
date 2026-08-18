@@ -1,6 +1,6 @@
 # Vlasov-Poisson solver
 
-[![Run Tests](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_test.yml/badge.svg)](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_test.yml)
+[![Run Tests](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_tests.yml/badge.svg)](https://github.com/maguerrap/vlasov-poisson/actions/workflows/run_tests.yml)
 [![codecov](https://codecov.io/gh/maguerrap/vlasov-poisson/graph/badge.svg)](https://codecov.io/gh/maguerrap/vlasov-poisson)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/maguerrap/vlasov-poisson/blob/main/LICENSE)
 
