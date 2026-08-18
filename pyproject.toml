@@ -28,8 +28,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest",
-  "pytest-xdist",
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
   "pylint>=2.6.0",
   "pyink",
   "ipykernel"
@@ -56,4 +56,29 @@ build-backend = "flit_core.buildapi"
 
 [tool.flit.sdist]
 exclude = ["**/*_test.py"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["vp_solver"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=vp_solver"
+testpaths = [
+  "tests",
+]
+
+# Exclude plotting and set coverage rules
+[tool.coverage.run]
+branch = true
+source = ["vp_solver"]
+omit = [
+    "vp_solver/utils_plots.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
 
